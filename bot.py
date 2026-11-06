@@ -33,7 +33,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     welcome_text = (
-        f"أهلاً بك يا {user_name} في بوت L2 ElectroDZ 🎓\n"
+        f"أهلاً بك يا **{user_name}** في بوت **L2 ElectroDZ** 🎓\n"
         "إليك قائمة مواد السنة الثانية إلكترونيات (السداسي الثالث).\n\n"
         "اختر المادة المطلوبة لتظهر لك أقسامها المخصصة:"
     )
@@ -92,12 +92,13 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             buttons = [
                 [InlineKeyboardButton("🔬 Fich TP المشترك", callback_data=f"{data}_tp")]
             ]
-            # زر العودة دائماً في الأسفل
+
+        # زر العودة دائماً في الأسفل
         buttons.append([InlineKeyboardButton("⬅️ العودة للقائمة الرئيسية", callback_data="back_to_start")])
         
         reply_markup = InlineKeyboardMarkup(buttons)
         await query.message.edit_text(
-            f"⚡ أنت الآن داخل مادة: {subject_name}\n\nاختر القسم المطلوب:",
+            f"⚡ أنت الآن داخل مادة: **{subject_name}**\n\nاختر القسم المطلوب:",
             reply_markup=reply_markup,
             parse_mode="Markdown"
         )
@@ -108,7 +109,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         await query.message.edit_text(
-            "📭 عذراً، لا يوجد شيء هنا حالياً.\nلم تقم بإضافة أي ملفات لهذا القسم بعد، ترقب الجديد قريباً! ⏳",
+            "📭 عذراً، **لا يوجد شيء هنا** حالياً.\nلم تقم بإضافة أي ملفات لهذا القسم بعد، ترقب الجديد قريباً! ⏳",
             reply_markup=reply_markup,
             parse_mode="Markdown"
         )
@@ -125,5 +126,5 @@ def main():
     print("Bot is running...")
     application.run_polling()
 
-if name == "main":
+if __name__ == "__main__":
     main()
