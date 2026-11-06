@@ -165,7 +165,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode="Markdown"
         )
     
-    # إذا ضغط على قسم فرعي لا توجد فيه ملفات مرفوعة بعد
+    # إذا ضغط على أي قسم فرعي فارغ (لا توجد له ملفات مرفوعة)
     elif "_" in data:
         subject_key = data.split("_")[0]
         keyboard = [
