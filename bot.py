@@ -4,7 +4,7 @@ from telegram.ext import Application, CallbackQueryHandler, CommandHandler, Cont
 
 TOKEN = os.getenv("TOKEN")
 
-# قائمة المواد المحدثة بالكامل مع إضافة Probabilités et Statistique
+# قائمة المواد الدراسية للسداسي الثالث
 SUBJECTS = {
     "analyse3": "📐 Analyse 3",
     "probba": "📊 Probabilités et Statistique",
@@ -16,8 +16,11 @@ SUBJECTS = {
     "etat_art": "⚡ État de l'art du Génie électrique",
 }
 
-# أمر /start - القائمة الرئيسية للمواد
+# أمر /start - القائمة الرئيسية مع ترحيب تلقائي باسم المستخدم
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # جلب اسم المستخدم الحقيقي من تيليجرام
+    user_name = update.effective_user.first_name or "زميلنا"
+    
     keyboard = []
     keys = list(SUBJECTS.keys())
     for i in range(0, len(keys), 2):
@@ -30,17 +33,17 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     welcome_text = (
-        "أهلاً بك يا حسام في بوت **L2 ElectroDZ** 🎓\n"
+        f"أهلاً بك يا {user_name} في بوت L2 ElectroDZ 🎓\n"
         "إليك قائمة مواد السنة الثانية إلكترونيات (السداسي الثالث).\n\n"
         "اختر المادة المطلوبة لتظهر لك أقسامها المستقلة (Cours, TD, TP):"
     )
 
     if update.message:
-        await update.message.reply_text(welcome_text, reply_markup=reply_markup)
+        await update.message.reply_text(welcome_text, reply_markup=reply_markup, parse_mode="Markdown")
     elif update.callback_query:
-        await update.callback_query.message.edit_text(welcome_text, reply_markup=reply_markup)
+        await update.callback_query.message.edit_text(welcome_text, reply_markup=reply_markup, parse_mode="Markdown")
 
-# التعامل مع الأزرار وجعل كل مادة مستقلة
+# التعامل مع الأزرار والأقسام المستقلة لكل مادة
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -67,8 +70,9 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         await query.message.edit_text(
-            f"⚡ أنت الآن داخل مادة: **{subject_name}**\n\nاختر القسم الذي تحتاجه:",
-            reply_markup=reply_markup
+            f"⚡ أنت الآن داخل مادة: {subject_name}\n\nاختر القسم الذي تحتاجه:",
+            reply_markup=reply_markup,
+            parse_mode="Markdown"
         )
     else:
         keyboard = [
@@ -92,5 +96,5 @@ def main():
     print("Bot is running...")
     application.run_polling()
 
-if __name__ == "__main__":
+if name == "main":
     main()
