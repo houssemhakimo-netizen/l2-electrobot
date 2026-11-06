@@ -1,10 +1,13 @@
 import os
+import logging
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import Application, CallbackQueryHandler, CommandHandler, ContextTypes
+from telegram.error import TelegramError
+from telegram.ext import Application, CallbackQueryHandler, CommandHandler, ContextTypes, MessageHandler, filters
 
+logging.basicConfig(level=logging.INFO)
 TOKEN = os.getenv("TOKEN")
 
-# قائمة المواد الدراسية للسداسي الثالث
+# قائمة المواد الدراسية
 SUBJECTS = {
     "analyse3": "📐 Analyse 3",
     "probba": "📊 Probabilités et Statistique",
@@ -17,10 +20,19 @@ SUBJECTS = {
     "tp_electro_combo": "🔬 TP Électronique & Électrotechnique",
 }
 
-# أمر /start - القائمة الرئيسية
+# 1. ضع المعرفات الطويلة هنا لاحقاً (اتركها فارغة أو ضع مكانها أي شيء مؤقتاً)
+FILES = {
+    "emploi": [("FILE_ID_HERE", "📅 ملف استعمال الزمن")],
+    "vibrations_cours": [("FILE_ID_HERE", "🌊 محاضرة الاهتزازات")],
+}
+
+# أداة سحرية: أي ملف ترسله للبوت في الشات، سيرد عليك فوراً بالـ file_id الحقيقي الخاص به!
+async def get_file_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    doc = update.message.document
+    await update.message.reply_text(f"خذ هذا الـ file_id الطويل:\n\n`{doc.file_id}`", parse_mode="Markdown")
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_name = update.effective_user.first_name or "زميلنا"
-    
     keyboard = []
     keys = list(SUBJECTS.keys())
     for i in range(0, len(keys), 2):
@@ -29,25 +41,15 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             row.append(InlineKeyboardButton(SUBJECTS[keys[i+1]], callback_data=keys[i+1]))
         keyboard.append(row)
     
-    # إضافة زر استعمال الزمن وزر منصة الجامعة في أسفل القائمة الرئيسية
-    keyboard.append([InlineKeyboardButton("📅 استعمال الزمن", callback_data="emploi"),
-                     InlineKeyboardButton("🌐 منصة الجامعة", callback_data="university_platform")])
-    keyboard.append([InlineKeyboardButton("📚 دليل الاستخدام والأرشيف", callback_data="help")])
-    
+    keyboard.append([InlineKeyboardButton("📅 استعمال الزمن", callback_data="emploi")])
     reply_markup = InlineKeyboardMarkup(keyboard)
-
-    welcome_text = (
-        f"أهلاً بك يا {user_name} في بوت L2 ElectroDZ\n"
-        "إليك قائمة مواد السنة الثانية إلكترونيات للسداسي الثالث.\n\n"
-        "اختر المادة المطلوبة أو الخدمة التي تحتاجها:"
-    )
-
+    
+    text = f"أهلاً بك يا {user_name}\nاختر المادة:"
     if update.message:
-        await update.message.reply_text(welcome_text, reply_markup=reply_markup, parse_mode="Markdown")
+        await update.message.reply_text(text, reply_markup=reply_markup)
     elif update.callback_query:
-        await update.callback_query.message.edit_text(welcome_text, reply_markup=reply_markup, parse_mode="Markdown")
+        await update.callback_query.message.edit_text(text, reply_markup=reply_markup)
 
-# التعامل مع الأزرار
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -58,136 +60,37 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await start(update, context)
         return
 
-    # زر استعمال الزمن
-    if data == "emploi":
-        await context.bot.send_document(chat_id=chat_id, document="AgADhh0AAo_eoFI", caption="📅 إليك ملف استعمال الزمن للسداسي الحالي.")
+    if data in FILES:
+        for file_id, caption in FILES[data]:
+            try:
+                await context.bot.send_document(chat_id=chat_id, document=file_id, caption=caption)
+            except TelegramError as e:
+                await context.bot.send_message(chat_id=chat_id, text=f"خطأ في إرسال الملف: {e}")
         return
 
-    # زر منصة الجامعة (ملف الكانفا الجامعي)
-    if data == "university_platform":
-        await context.bot.send_document(chat_id=chat_id, document="AgADPSEAAt_s6VA", caption="🌐 ملف الكانفا الخاص بالجامعة.")
-        return
-
-    # --- ملفات مادة Analyse 3 ---
-    if data == "analyse3_td":
-        await context.bot.send_document(chat_id=chat_id, document="AgADfR0AAqGWqFI", caption="📝 سلسلة التمارين الأولى لمادة Analyse 03.")
-        return
-
-    # --- ملفات مادة Probabilités et Statistique ---
-    if data == "probba_cours":
-        await context.bot.send_document(chat_id=chat_id, document="AgADZhoAAq3haFI", caption="📊 ملخص محاضرة الإحصاء والاحتمالات.")
-        await context.bot.send_document(chat_id=chat_id, document="AgAD-iEAAjlh8VI", caption="📊 محاضرة الإحصاء والاحتمالات (جامعة تيارت).")
-        return
-
-    if data == "probba_exams":
-        await context.bot.send_document(chat_id=chat_id, document="AgADZhoAAq3haFI", caption="📑 ملخصات وإمتحانات مادة الإحصاء والاحتمالات.")
-        return
-
-    # --- ملفات مادة Vibrations et ondes ---
-    if data == "vibrations_cours":
-        await context.bot.send_document(chat_id=chat_id, document="AgADNSQAAnbVuVI", caption="🌊 محاضرة الاهتزازات والأمواج (Cours 02).")
-        await context.bot.send_document(chat_id=chat_id, document="AgADMR8AAhsvQFM", caption="🌊 محاضرة الاهتزازات والأمواج (جامعة سكيكدة).")
-        return
-
-    if data == "vibrations_td":
-        await context.bot.send_document(chat_id=chat_id, document="AgADsCAAAl9iOVI", caption="📝 سلسلة التمارين الأولى (TD 01).")
-        await context.bot.send_document(chat_id=chat_id, document="AgADSyQAArhJsFI", caption="📝 سلسلة التمارين الثانية (TD 02).")
-        await context.bot.send_document(chat_id=chat_id, document="AgADQiQAAiJ2KVM", caption="📝 سلسلة التمارين الثالثة (TD 03).")
-        return
-
-    # --- ملفات مادة Électronique Fondamentale 1 ---
-    if data == "electronique1_cours":
-        await context.bot.send_document(chat_id=chat_id, document="AgADWx8AAs7fsVI", caption="⚡ المحاضرة الأولى (Course 1).")
-        await context.bot.send_document(chat_id=chat_id, document="AgADXh8AAs7fsVI", caption="⚡ محاضرة الإلكترونيات 1 (ملف إضافي).")
-        await context.bot.send_document(chat_id=chat_id, document="AgADbR4AArgXCFM", caption="⚡ محاضرات نظريات الدوائر (Circuit Theorems - Kirchhoff, Thevenin, Norton).")
-        return
-
-    if data == "electronique1_td":
-        await context.bot.send_document(chat_id=chat_id, document="AgADXB8AAs7fsVI", caption="📝 سلسلة التمارين الأولى لمادة الإلكترونيات 1.")
-        return
-
-    # --- ملفات مادة Électrotechnique Fondamentale 1 ---
-    if data == "electrotechnique1_cours":
-        await context.bot.send_document(chat_id=chat_id, document="AgADUyUAAlNC8FI", caption="🔌 المحاضرة الشاملة لمادة الإكتروتقني 1.")
-        return
-
-    # --- ملفات مادة Énergie et Environnement ---
-    if data == "energie_cours":
-        await context.bot.send_document(chat_id=chat_id, document="AgADTB4AAuCLmFI", caption="🌱 الطاقة والبيئة - المحاضرة الأولى (Cours 1).")
-        await context.bot.send_document(chat_id=chat_id, document="AgADSB4AAuCLmFI", caption="🌱 الطاقة والبيئة - الفصل الثاني (Chapitre 2).")
-        return
-
-    # --- ملفات مادة État de l'art du Génie électrique ---
-    if data == "etat_art_cours":
-        await context.bot.send_document(chat_id=chat_id, document="AgADSR4AAuCLmFI", caption="⚡ état de l'art - الفصل الأول.")
-        return
-
-    # إذا اختار المستخدم المادة الرئيسية
     if data in SUBJECTS:
         subject_name = SUBJECTS[data]
-        buttons = []
-        
-        if data in ["analyse3", "probba", "electronique1", "electrotechnique1"]:
-            buttons = [
-                [InlineKeyboardButton("📖 Cours", callback_data=f"{data}_cours"),
-                 InlineKeyboardButton("📝 Fich TD", callback_data=f"{data}_td")],
-                [InlineKeyboardButton("📑 Examens & Résumés", callback_data=f"{data}_exams")]
-            ]
-        elif data == "python":
-            buttons = [
-                [InlineKeyboardButton("📖 Cours", callback_data=f"{data}_cours"),
-                 InlineKeyboardButton("🔬 Fich TP", callback_data=f"{data}_tp")],
-                [InlineKeyboardButton("📑 Examens & Résumés", callback_data=f"{data}_exams")]
-            ]
-        elif data in ["energie", "etat_art"]:
-            buttons = [
-                [InlineKeyboardButton("📖 Cours", callback_data=f"{data}_cours")],
-                [InlineKeyboardButton("📑 Examens & Résumés", callback_data=f"{data}_exams")]
-            ]
-        elif data == "vibrations":
-            buttons = [
-                [InlineKeyboardButton("📖 Cours", callback_data=f"{data}_cours"),
-                 InlineKeyboardButton("📝 Fich TD", callback_data=f"{data}_td")],
-                [InlineKeyboardButton("🔬 Fich TP", callback_data=f"{data}_tp"),
-                 InlineKeyboardButton("📑 Examens & Résumés", callback_data=f"{data}_exams")]
-            ]
-        elif data == "tp_electro_combo":
-            buttons = [
-                [InlineKeyboardButton("🔬 Fich TP المشترك", callback_data=f"{data}_tp")]
-            ]
-
-        buttons.append([InlineKeyboardButton("⬅️ العودة للقائمة الرئيسية", callback_data="back_to_start")])
-        reply_markup = InlineKeyboardMarkup(buttons)
-        
-        await query.message.edit_text(
-            f"⚡ أنت الآن داخل مادة: {subject_name}\n\nاختر القسم المطلوب:",
-            reply_markup=reply_markup,
-            parse_mode="Markdown"
-        )
+        buttons = [
+            [InlineKeyboardButton("📖 Cours", callback_data=f"{data}_cours"),
+             InlineKeyboardButton("📝 Fich TD", callback_data=f"{data}_td")],
+            [InlineKeyboardButton("⬅️ القائمة الرئيسية", callback_data="back_to_start")]
+        ]
+        await query.message.edit_text(f"أنت في مادة: {subject_name}", reply_markup=InlineKeyboardMarkup(buttons))
     
-    # إذا ضغط على أي قسم فرعي فارغ (لا توجد له ملفات مرفوعة)
     elif "_" in data:
         subject_key = data.split("_")[0]
-        keyboard = [
-            [InlineKeyboardButton("⬅️ العودة للمادة", callback_data=subject_key)]
-        ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        await query.message.edit_text(
-            "📭 عذراً، لا يوجد شيء هنا حالياً.\nلم تقم بإضافة أي ملفات لهذا القسم بعد.",
-            reply_markup=reply_markup,
-            parse_mode="Markdown"
-        )
+        keyboard = [[InlineKeyboardButton("⬅️ عودة", callback_data=subject_key)]]
+        await query.message.edit_text("عذراً، لا يوجد ملف هنا حالياً.", reply_markup=InlineKeyboardMarkup(keyboard))
     else:
         await start(update, context)
 
 def main():
-    if not TOKEN:
-        print("Error: TOKEN is not set")
-        return
-
     application = Application.builder().token(TOKEN).build()
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CallbackQueryHandler(button_handler))
+    
+    # هذه الخطوة هي التي ستعطيك المعرفات الصحيحة في تيليجرام
+    application.add_handler(MessageHandler(filters.Document.ALL, get_file_id))
 
     print("Bot is running")
     application.run_polling()
