@@ -2,7 +2,7 @@ import os
 import logging
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.error import TelegramError
-from telegram.ext import Application, CallbackQueryHandler, CommandHandler, ContextTypes
+from telegram.ext import Application, CallbackQueryHandler, CommandHandler, ContextTypes, MessageHandler, filters
 
 logging.basicConfig(level=logging.INFO)
 TOKEN = os.getenv("TOKEN")
@@ -20,7 +20,7 @@ SUBJECTS = {
     "tp_electro_combo": "🔬 TP Électronique & Électrotechnique",
 }
 
-# القاموس الشامل الذي يحتوي على المعرفات الطويلة الحقيقية لكل ملفاتك
+# القاموس الشامل الذي يحتوي على المعرفات
 FILES = {
     "emploi": [
         ("AgADhh0AAo_eoFI", "📅 إليك ملف استعمال الزمن للسداسي الحالي.")
@@ -66,6 +66,11 @@ FILES = {
         ("AgADSR4AAuCLmFI", "⚡ état de l'art - الفصل الأول.")
     ],
 }
+
+# أداة استخراج معرف الملف تلقائياً عند إرساله للبوت
+async def get_file_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    doc = update.message.document
+    await update.message.reply_text(f"file_id:\n`{doc.file_id}`", parse_mode="Markdown")
 
 # أمر /start - القائمة الرئيسية
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -184,6 +189,9 @@ def main():
     application = Application.builder().token(TOKEN).build()
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CallbackQueryHandler(button_handler))
+    
+    # معالج استخراج الـ file_id عند إرسال أي ملف للبوت
+    application.add_handler(MessageHandler(filters.Document.ALL, get_file_id))
 
     print("Bot is running")
     application.run_polling()
