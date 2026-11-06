@@ -52,6 +52,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     data = query.data
+    chat_id = query.message.chat_id
 
     if data == "back_to_start":
         await start(update, context)
@@ -59,87 +60,66 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # زر استعمال الزمن
     if data == "emploi":
-        await query.message.reply_document(
-            document="AgADhh0AAo_eoFI",
-            caption="📅 إليك ملف استعمال الزمن للسداسي الحالي."
-        )
+        await context.bot.send_document(chat_id=chat_id, document="AgADhh0AAo_eoFI", caption="📅 إليك ملف استعمال الزمن للسداسي الحالي.")
         return
 
     # زر منصة الجامعة (ملف الكانفا الجامعي)
     if data == "university_platform":
-        await query.message.reply_document(
-            document="AgADPSEAAt_s6VA",
-            caption="🌐 ملف الكانفا الخاص بالجامعة."
-        )
+        await context.bot.send_document(chat_id=chat_id, document="AgADPSEAAt_s6VA", caption="🌐 ملف الكانفا الخاص بالجامعة.")
         return
 
     # --- ملفات مادة Analyse 3 ---
     if data == "analyse3_td":
-        await query.message.reply_document(
-            document="AgADfR0AAqGWqFI",
-            caption="📝 سلسلة التمارين الأولى لمادة Analyse 03."
-        )
+        await context.bot.send_document(chat_id=chat_id, document="AgADfR0AAqGWqFI", caption="📝 سلسلة التمارين الأولى لمادة Analyse 03.")
         return
 
     # --- ملفات مادة Probabilités et Statistique ---
     if data == "probba_cours":
-        await context.bot.send_document(chat_id=query.message.chat_id, document="AgADZhoAAq3haFI", caption="📊 ملخص محاضرة الإحصاء والاحتمالات.")
-        await context.bot.send_document(chat_id=query.message.chat_id, document="AgAD-iEAAjlh8VI", caption="📊 محاضرة الإحصاء والاحتمالات (جامعة تيارت).")
+        await context.bot.send_document(chat_id=chat_id, document="AgADZhoAAq3haFI", caption="📊 ملخص محاضرة الإحصاء والاحتمالات.")
+        await context.bot.send_document(chat_id=chat_id, document="AgAD-iEAAjlh8VI", caption="📊 محاضرة الإحصاء والاحتمالات (جامعة تيارت).")
         return
 
     if data == "probba_exams":
-        await query.message.reply_document(
-            document="AgADZhoAAq3haFI",
-            caption="📑 ملخصات وإمتحانات مادة الإحصاء والاحتمالات."
-        )
+        await context.bot.send_document(chat_id=chat_id, document="AgADZhoAAq3haFI", caption="📑 ملخصات وإمتحانات مادة الإحصاء والاحتمالات.")
         return
 
     # --- ملفات مادة Vibrations et ondes ---
     if data == "vibrations_cours":
-        await context.bot.send_document(chat_id=query.message.chat_id, document="AgADNSQAAnbVuVI", caption="🌊 محاضرة الاهتزازات والأمواج (Cours 02).")
-        await context.bot.send_document(chat_id=query.message.chat_id, document="AgADMR8AAhsvQFM", caption="🌊 محاضرة الاهتزازات والأمواج (جامعة سكيكدة).")
+        await context.bot.send_document(chat_id=chat_id, document="AgADNSQAAnbVuVI", caption="🌊 محاضرة الاهتزازات والأمواج (Cours 02).")
+        await context.bot.send_document(chat_id=chat_id, document="AgADMR8AAhsvQFM", caption="🌊 محاضرة الاهتزازات والأمواج (جامعة سكيكدة).")
         return
 
     if data == "vibrations_td":
-        await context.bot.send_document(chat_id=query.message.chat_id, document="AgADsCAAAl9iOVI", caption="📝 سلسلة التمارين الأولى (TD 01).")
-        await context.bot.send_document(chat_id=query.message.chat_id, document="AgADSyQAArhJsFI", caption="📝 سلسلة التمارين الثانية (TD 02).")
-        await context.bot.send_document(chat_id=query.message.chat_id, document="AgADQiQAAiJ2KVM", caption="📝 سلسلة التمارين الثالثة (TD 03).")
+        await context.bot.send_document(chat_id=chat_id, document="AgADsCAAAl9iOVI", caption="📝 سلسلة التمارين الأولى (TD 01).")
+        await context.bot.send_document(chat_id=chat_id, document="AgADSyQAArhJsFI", caption="📝 سلسلة التمارين الثانية (TD 02).")
+        await context.bot.send_document(chat_id=chat_id, document="AgADQiQAAiJ2KVM", caption="📝 سلسلة التمارين الثالثة (TD 03).")
         return
 
     # --- ملفات مادة Électronique Fondamentale 1 ---
     if data == "electronique1_cours":
-        await context.bot.send_document(chat_id=query.message.chat_id, document="AgADWx8AAs7fsVI", caption="⚡ المحاضرة الأولى (Course 1).")
-        await context.bot.send_document(chat_id=query.message.chat_id, document="AgADXh8AAs7fsVI", caption="⚡ محاضرة الإلكترونيات 1 (ملف إضافي).")
-        await context.bot.send_document(chat_id=query.message.chat_id, document="AgADbR4AArgXCFM", caption="⚡ محاضرات نظريات الدوائر (Circuit Theorems - Kirchhoff, Thevenin, Norton).")
+        await context.bot.send_document(chat_id=chat_id, document="AgADWx8AAs7fsVI", caption="⚡ المحاضرة الأولى (Course 1).")
+        await context.bot.send_document(chat_id=chat_id, document="AgADXh8AAs7fsVI", caption="⚡ محاضرة الإلكترونيات 1 (ملف إضافي).")
+        await context.bot.send_document(chat_id=chat_id, document="AgADbR4AArgXCFM", caption="⚡ محاضرات نظريات الدوائر (Circuit Theorems - Kirchhoff, Thevenin, Norton).")
         return
 
     if data == "electronique1_td":
-        await query.message.reply_document(
-            document="AgADXB8AAs7fsVI",
-            caption="📝 سلسلة التمارين الأولى لمادة الإلكترونيات 1."
-        )
+        await context.bot.send_document(chat_id=chat_id, document="AgADXB8AAs7fsVI", caption="📝 سلسلة التمارين الأولى لمادة الإلكترونيات 1.")
         return
 
     # --- ملفات مادة Électrotechnique Fondamentale 1 ---
     if data == "electrotechnique1_cours":
-        await query.message.reply_document(
-            document="AgADUyUAAlNC8FI",
-            caption="🔌 المحاضرة الشاملة لمادة الإكتروتقني 1."
-        )
+        await context.bot.send_document(chat_id=chat_id, document="AgADUyUAAlNC8FI", caption="🔌 المحاضرة الشاملة لمادة الإكتروتقني 1.")
         return
 
     # --- ملفات مادة Énergie et Environnement ---
     if data == "energie_cours":
-        await context.bot.send_document(chat_id=query.message.chat_id, document="AgADTB4AAuCLmFI", caption="🌱 الطاقة والبيئة - المحاضرة الأولى (Cours 1).")
-        await context.bot.send_document(chat_id=query.message.chat_id, document="AgADSB4AAuCLmFI", caption="🌱 الطاقة والبيئة - الفصل الثاني (Chapitre 2).")
+        await context.bot.send_document(chat_id=chat_id, document="AgADTB4AAuCLmFI", caption="🌱 الطاقة والبيئة - المحاضرة الأولى (Cours 1).")
+        await context.bot.send_document(chat_id=chat_id, document="AgADSB4AAuCLmFI", caption="🌱 الطاقة والبيئة - الفصل الثاني (Chapitre 2).")
         return
 
     # --- ملفات مادة État de l'art du Génie électrique ---
     if data == "etat_art_cours":
-        await query.message.reply_document(
-            document="AgADSR4AAuCLmFI",
-            caption="⚡ état de l'art - الفصل الأول."
-        )
+        await context.bot.send_document(chat_id=chat_id, document="AgADSR4AAuCLmFI", caption="⚡ état de l'art - الفصل الأول.")
         return
 
     # إذا اختار المستخدم المادة الرئيسية
